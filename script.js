@@ -24,6 +24,9 @@ function clearDisplay() {
 
 // Numbers
 function handleNumbers(num) {
+  if ("vibrate" in navigator) {
+    navigator.vibrate(60);
+  }
   if (waitingForSecondOperand) {
     if (firsttime) {
       OperationDisplay.innerHTML = "";
@@ -49,6 +52,10 @@ function handleNumbers(num) {
 
 // final result
 function handleResult() {
+  if (nextValue === "0" && operator === "÷") {
+    ResultDisplay.value = "Error: Division by zero";
+    return;
+  }
   ResultDisplay.value = finalResult;
   firsttime = true;
   previousValue = finalResult;
@@ -113,3 +120,43 @@ function roundToDecimalPlaces(num, decimalPlaces) {
   return Math.round(num * factor) / factor;
 }
 // console.log(roundToDecimalPlaces(3.14159, 2)); // Output: 3.14
+
+// delete last digit
+function handleDelete() {
+  if (waitingForSecondOperand) {
+    previousValue = previousValue.slice(0, -1);
+    ResultDisplay.value = previousValue || "0";
+  } else {
+    nextValue = nextValue.slice(0, -1);
+    ResultDisplay.value = nextValue || "0";
+    handleCalculation(previousValue, nextValue, operator);
+  }
+}
+
+document.addEventListener("keydown", (event) => {
+  if ((event.key >= "0" && event.key <= "9") || event.key === ".") {
+    handleNumbers(event.key);
+  }
+  if (
+    event.key === "+" ||
+    event.key === "-" ||
+    event.key === "*" ||
+    event.key === "/"
+  ) {
+    handelOperation(
+      event.key === "*" ? "x" : event.key === "/" ? "÷" : event.key,
+    );
+  }
+  if (event.key === "Enter" || event.key === "=") {
+    handleResult();
+  }
+  if (event.key === "%") {
+    handelDesimal();
+  }
+  if (event.key === "Backspace") {
+    handleDelete();
+  }
+  if (event.key === "Escape") {
+    clearDisplay();
+  }
+});
